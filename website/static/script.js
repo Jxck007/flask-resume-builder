@@ -1,3 +1,33 @@
+/* THEME TOGGLE */
+const themes = ['light', 'dark', 'minimal'];
+let currentThemeIndex = 0;
+
+function initTheme() {
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  currentThemeIndex = themes.indexOf(savedTheme);
+  if (currentThemeIndex === -1) currentThemeIndex = 0;
+  applyTheme(themes[currentThemeIndex]);
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('theme', theme);
+}
+
+function toggleTheme() {
+  currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+  applyTheme(themes[currentThemeIndex]);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initTheme();
+  
+  const themeToggle = document.getElementById('themeToggle');
+  if (themeToggle) {
+    themeToggle.addEventListener('click', toggleTheme);
+  }
+});
+
 const navToggle = document.getElementById('navToggle');
 const navLinks = document.getElementById('navLinks');
 

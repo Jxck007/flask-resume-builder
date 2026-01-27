@@ -1,90 +1,529 @@
 {% extends "base.html" %}
 {% block title %}Create Resume | ResumeBuilder{% endblock %}
 
-{% block styles %}
-  {% if Resume.style == 'classic' %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/classic.css') }}">
-  {% else %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/modern.css') }}">
-  {% endif %}
+{% block head %}
+  <style>
+    :root {
+      --primary-color: #667eea;
+      --secondary-color: #764ba2;
+      --bg-light: #f9f9f9;
+      --border-color: #e0e0e0;
+      --text-dark: #333;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .profile-container {
+      max-width: 900px;
+      margin: 30px auto;
+    }
+
+    .resume-form-container {
+      background: white;
+      padding: 40px;
+      border-radius: 8px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .resume-form-container h2 {
+      color: var(--primary-color);
+      font-size: 28px;
+      margin-top: 0;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .resume-form-container h3 {
+      color: var(--text-dark);
+      font-size: 18px;
+      margin: 30px 0 15px 0;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--primary-color);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .resume-form-container h3:first-of-type {
+      margin-top: 0;
+    }
+
+    .form-section {
+      margin-bottom: 25px;
+    }
+
+    .form-section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .add-btn {
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      transition: background 0.3s;
+    }
+
+    .add-btn:hover {
+      background: var(--secondary-color);
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+      padding: 15px;
+      background: var(--bg-light);
+      border-left: 4px solid var(--primary-color);
+      border-radius: 4px;
+      position: relative;
+    }
+
+    .form-group.item-entry {
+      margin-bottom: 15px;
+    }
+
+    .form-group .remove-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #ff6b6b;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      transition: background 0.3s;
+    }
+
+    .form-group .remove-btn:hover {
+      background: #ff5252;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 8px;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="url"],
+    input[type="date"],
+    input[type="file"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--text-dark);
+      transition: border-color 0.3s;
+    }
+
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="tel"]:focus,
+    input[type="url"]:focus,
+    input[type="date"]:focus,
+    input[type="file"]:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .form-row.full {
+      grid-template-columns: 1fr;
+    }
+
+    .profile-pic-section {
+      margin-bottom: 30px;
+    }
+
+    .preview-container {
+      margin-top: 15px;
+      text-align: center;
+    }
+
+    .preview-container img {
+      max-width: 120px;
+      border-radius: 50%;
+      border: 3px solid var(--primary-color);
+      object-fit: cover;
+    }
+
+    .resume-save-btn,
+    .action-btn {
+      background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+      color: white;
+      padding: 14px 40px;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transition: transform 0.3s, box-shadow 0.3s;
+      margin-right: 10px;
+    }
+
+    .resume-save-btn:hover,
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .resume-save-btn {
+      width: 100%;
+      margin: 30px 0 0 0;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+
+    .btn-secondary {
+      background: white;
+      color: var(--primary-color);
+      border: 2px solid var(--primary-color);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(102, 126, 234, 0.05);
+    }
+
+    @media (max-width: 768px) {
+      .resume-form-container {
+        padding: 20px;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .actions {
+        flex-direction: column;
+      }
+
+      .action-btn {
+        width: 100%;
+        margin: 0;
+      }
+    }
+  </style>
 {% endblock %}
 
 {% block body %}
 <div class="profile-container">
   <div class="resume-form-container">
-    <h2>Create Your Resume</h2>
+    <h2>Edit Your Resume</h2>
     <form id="profile-form" method="POST" enctype="multipart/form-data">
 
-      <label for="profile_pic">Upload Profile Picture</label>
-      <input type="file" name="profile_pic" accept="image/*">
-      {% if PersonalInfo.profile_pic %}
-        <div class="preview-container">
-          <img src="{{ url_for('static', filename='uploads/' + PersonalInfo.profile_pic) }}" 
-              alt="Current Profile Pic" 
-              style="max-width: 120px; border-radius: 50%; margin-top: 10px;">
+      <!-- Personal Information Section -->
+      <h3>Personal Information</h3>
+      
+      <div class="profile-pic-section form-group">
+        <label for="profile_pic">Upload Profile Picture</label>
+        <input type="file" name="profile_pic" accept="image/*">
+        {% if PersonalInfo.profile_pic %}
+          <div class="preview-container">
+            <img src="{{ url_for('static', filename='uploads/' + PersonalInfo.profile_pic) }}" 
+                alt="Current Profile Pic">
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="form-row">
+        <div>
+          <label for="full_name">Full Name *</label>
+          <input type="text" name="full_name" id="full_name" value="{{ PersonalInfo.full_name or '' }}" required>
         </div>
-      {% endif %}
+        <div>
+          <label for="phone">Phone Number *</label>
+          <input type="tel" name="phone" id="phone" value="{{ PersonalInfo.phone or '' }}" required>
+        </div>
+      </div>
 
+      <div class="form-row">
+        <div>
+          <label for="resume_email">Email *</label>
+          <input type="email" name="resume_email" id="resume_email" value="{{ PersonalInfo.resume_email or '' }}" required>
+        </div>
+        <div></div>
+      </div>
 
-      <label for="full_name">Full Name</label>
-      <input type="text" name="full_name" id="full_name" value="{{ PersonalInfo.full_name or '' }}" required>
+      <div class="form-row full">
+        <div>
+          <label for="github">GitHub Link</label>
+          <input type="url" name="github" id="github" value="{{ PersonalInfo.github or '' }}">
+        </div>
+      </div>
 
-      <label for="resume_email">Email</label>
-      <input type="email" name="resume_email" id="resume_email" value="{{ PersonalInfo.resume_email or '' }}" required>
+      <div class="form-row full">
+        <div>
+          <label for="linkedin">LinkedIn Link</label>
+          <input type="url" name="linkedin" id="linkedin" value="{{ PersonalInfo.linkedin or '' }}">
+        </div>
+      </div>
 
-      <label for="phone">Phone Number</label>
-      <input type="tel" name="phone" id="phone" value="{{ PersonalInfo.phone or '' }}" pattern="\d{10}" required>
+      <div class="form-row full">
+        <div>
+          <label for="summary">Professional Summary</label>
+          <textarea name="summary" id="summary" required>{{ PersonalInfo.summary or '' }}</textarea>
+        </div>
+      </div>
 
-      <label for="github">GitHub Link</label>
-      <input type="url" name="github" id="github" value="{{ PersonalInfo.github or '' }}">
-
-      <label for="linkedin">LinkedIn Link</label>
-      <input type="url" name="linkedin" id="linkedin" value="{{ PersonalInfo.linkedin or '' }}">
-
-      <label for="summary">Professional Summary</label>
-      <textarea name="summary" id="summary">{{ PersonalInfo.summary or '' }}</textarea>
-
-      <!-- Education -->
+      <!-- Education Section -->
       <h3>Education</h3>
-      <input type="text" name="degree" placeholder="Degree" value="{{ Education.degree or '' }}">
-      <input type="text" name="institution" placeholder="Institution" value="{{ Education.institution or '' }}">
-      <input type="text" name="start_year" placeholder="Start Year" value="{{ Education.start_year or '' }}">
-      <input type="text" name="end_year" placeholder="End Year" value="{{ Education.end_year or '' }}">
-      <textarea name="edu_description">{{ Education.description or '' }}</textarea>
+      <div class="form-section" id="educations-container">
+        {% for edu in educations %}
+        <div class="form-group item-entry">
+          <button type="button" class="remove-btn" onclick="removeField(this)">Remove</button>
+          <div class="form-row">
+            <input type="text" name="degree[]" placeholder="Degree" value="{{ edu.degree or '' }}">
+            <input type="text" name="institution[]" placeholder="Institution" value="{{ edu.institution or '' }}">
+          </div>
+          <div class="form-row">
+            <input type="text" name="start_year[]" placeholder="Start Year" value="{{ edu.start_year or '' }}">
+            <input type="text" name="end_year[]" placeholder="End Year" value="{{ edu.end_year or '' }}">
+          </div>
+          <textarea name="edu_description[]" placeholder="Description">{{ edu.description or '' }}</textarea>
+        </div>
+        {% endfor %}
+      </div>
+      <button type="button" class="add-btn" onclick="addEducation()">+ Add Education</button>
 
-      <!-- Experience -->
+      <!-- Experience Section -->
       <h3>Experience</h3>
-      <input type="text" name="job_title" placeholder="Job Title" value="{{ Experience.job_title or '' }}">
-      <input type="text" name="company" placeholder="Company" value="{{ Experience.company or '' }}">
-      <input type="text" name="start_date" placeholder="Start Date" value="{{ Experience.start_date or '' }}">
-      <input type="text" name="end_date" placeholder="End Date" value="{{ Experience.end_date or '' }}">
-      <textarea name="exp_description">{{ Experience.description or '' }}</textarea>
+      <div class="form-section" id="experiences-container">
+        {% for exp in experiences %}
+        <div class="form-group item-entry">
+          <button type="button" class="remove-btn" onclick="removeField(this)">Remove</button>
+          <div class="form-row">
+            <input type="text" name="job_title[]" placeholder="Job Title" value="{{ exp.job_title or '' }}">
+            <input type="text" name="company[]" placeholder="Company" value="{{ exp.company or '' }}">
+          </div>
+          <div class="form-row">
+            <input type="text" name="start_date[]" placeholder="Start Date" value="{{ exp.start_date or '' }}">
+            <input type="text" name="end_date[]" placeholder="End Date" value="{{ exp.end_date or '' }}">
+          </div>
+          <textarea name="exp_description[]" placeholder="Description">{{ exp.description or '' }}</textarea>
+        </div>
+        {% endfor %}
+      </div>
+      <button type="button" class="add-btn" onclick="addExperience()">+ Add Experience</button>
 
-      <!-- Projects -->
+      <!-- Projects Section -->
       <h3>Projects</h3>
-      <input type="text" name="project_title" placeholder="Project Title" value="{{ Project.title or '' }}">
-      <textarea name="project_description">{{ Project.description or '' }}</textarea>
-      <input type="text" name="tech_stack" placeholder="Tech Stack" value="{{ Project.tech_stack or '' }}">
-      <input type="url" name="project_link" placeholder="Project Link" value="{{ Project.link or '' }}">
+      <div class="form-section" id="projects-container">
+        {% for proj in projects %}
+        <div class="form-group item-entry">
+          <button type="button" class="remove-btn" onclick="removeField(this)">Remove</button>
+          <div class="form-row full">
+            <input type="text" name="project_title[]" placeholder="Project Title" value="{{ proj.title or '' }}">
+          </div>
+          <div class="form-row full">
+            <textarea name="project_description[]" placeholder="Description">{{ proj.description or '' }}</textarea>
+          </div>
+          <div class="form-row">
+            <input type="text" name="tech_stack[]" placeholder="Tech Stack" value="{{ proj.tech_stack or '' }}">
+            <input type="url" name="project_link[]" placeholder="Project Link" value="{{ proj.link or '' }}">
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <button type="button" class="add-btn" onclick="addProject()">+ Add Project</button>
 
-      <!-- Skills -->
+      <!-- Skills Section -->
       <h3>Skills</h3>
-      <input type="text" name="skill_name" placeholder="Skill Name" value="{{ Skill.name or '' }}">
-      <select name="skill_level">
-        <option value="beginner" {% if Skill.level == 'beginner' %}selected{% endif %}>Beginner</option>
-        <option value="intermediate" {% if Skill.level == 'intermediate' %}selected{% endif %}>Intermediate</option>
-        <option value="advanced" {% if Skill.level == 'advanced' %}selected{% endif %}>Advanced</option>
-      </select>
+      <div class="form-section" id="skills-container">
+        {% for skill in skills %}
+        <div class="form-group item-entry">
+          <button type="button" class="remove-btn" onclick="removeField(this)">Remove</button>
+          <div class="form-row">
+            <input type="text" name="skill_name[]" placeholder="Skill Name" value="{{ skill.name or '' }}">
+            <select name="skill_level[]">
+              <option value="beginner" {% if skill.level == 'beginner' %}selected{% endif %}>Beginner</option>
+              <option value="intermediate" {% if skill.level == 'intermediate' %}selected{% endif %}>Intermediate</option>
+              <option value="advanced" {% if skill.level == 'advanced' %}selected{% endif %}>Advanced</option>
+            </select>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <button type="button" class="add-btn" onclick="addSkill()">+ Add Skill</button>
 
-      <!-- Certifications -->
+      <!-- Certifications Section -->
       <h3>Certifications</h3>
-      <input type="text" name="cert_name" placeholder="Certification Name" value="{{ Certification.name or '' }}">
-      <input type="text" name="issuer" placeholder="Issuer" value="{{ Certification.issuer or '' }}">
-      <input type="date" name="issue_date" value="{{ Certification.issue_date or '' }}">
-      <input type="url" name="credential_link" placeholder="Credential Link" value="{{ Certification.credential_link or '' }}">
+      <div class="form-section" id="certifications-container">
+        {% for cert in certifications %}
+        <div class="form-group item-entry">
+          <button type="button" class="remove-btn" onclick="removeField(this)">Remove</button>
+          <div class="form-row full">
+            <input type="text" name="cert_name[]" placeholder="Certification Name" value="{{ cert.name or '' }}">
+          </div>
+          <div class="form-row">
+            <input type="text" name="issuer[]" placeholder="Issuer" value="{{ cert.issuer or '' }}">
+            <input type="date" name="issue_date[]" value="{{ cert.issue_date or '' }}">
+          </div>
+          <div class="form-row full">
+            <input type="url" name="credential_link[]" placeholder="Credential Link" value="{{ cert.credential_link or '' }}">
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <button type="button" class="add-btn" onclick="addCertification()">+ Add Certification</button>
 
-      <button type="submit" class="resume-save-btn">Save Resume</button>
+      <div class="actions">
+        <button type="submit" class="action-btn">Save Resume</button>
+        <a href="{{ url_for('views.view_resume', resume_id=Resume.id) }}" class="action-btn btn-secondary">Preview</a>
+        <a href="{{ url_for('views.manage_resumes') }}" class="action-btn btn-secondary">Cancel</a>
+      </div>
     </form>
   </div>
 </div>
+
+<script>
+  function removeField(btn) {
+    btn.parentElement.remove();
+  }
+
+  function addEducation() {
+    const container = document.getElementById('educations-container');
+    const html = `
+      <div class="form-group item-entry">
+        <button type="button" class="remove-btn" onclick="removeField(this)">Remove</button>
+        <div class="form-row">
+          <input type="text" name="degree[]" placeholder="Degree">
+          <input type="text" name="institution[]" placeholder="Institution">
+        </div>
+        <div class="form-row">
+          <input type="text" name="start_year[]" placeholder="Start Year">
+          <input type="text" name="end_year[]" placeholder="End Year">
+        </div>
+        <textarea name="edu_description[]" placeholder="Description"></textarea>
+      </div>
+    `;
+    container.insertAdjacentHTML('beforeend', html);
+  }
+
+  function addExperience() {
+    const container = document.getElementById('experiences-container');
+    const html = `
+      <div class="form-group item-entry">
+        <button type="button" class="remove-btn" onclick="removeField(this)">Remove</button>
+        <div class="form-row">
+          <input type="text" name="job_title[]" placeholder="Job Title">
+          <input type="text" name="company[]" placeholder="Company">
+        </div>
+        <div class="form-row">
+          <input type="text" name="start_date[]" placeholder="Start Date">
+          <input type="text" name="end_date[]" placeholder="End Date">
+        </div>
+        <textarea name="exp_description[]" placeholder="Description"></textarea>
+      </div>
+    `;
+    container.insertAdjacentHTML('beforeend', html);
+  }
+
+  function addProject() {
+    const container = document.getElementById('projects-container');
+    const html = `
+      <div class="form-group item-entry">
+        <button type="button" class="remove-btn" onclick="removeField(this)">Remove</button>
+        <div class="form-row full">
+          <input type="text" name="project_title[]" placeholder="Project Title">
+        </div>
+        <div class="form-row full">
+          <textarea name="project_description[]" placeholder="Description"></textarea>
+        </div>
+        <div class="form-row">
+          <input type="text" name="tech_stack[]" placeholder="Tech Stack">
+          <input type="url" name="project_link[]" placeholder="Project Link">
+        </div>
+      </div>
+    `;
+    container.insertAdjacentHTML('beforeend', html);
+  }
+
+  function addSkill() {
+    const container = document.getElementById('skills-container');
+    const html = `
+      <div class="form-group item-entry">
+        <button type="button" class="remove-btn" onclick="removeField(this)">Remove</button>
+        <div class="form-row">
+          <input type="text" name="skill_name[]" placeholder="Skill Name">
+          <select name="skill_level[]">
+            <option value="beginner">Beginner</option>
+            <option value="intermediate" selected>Intermediate</option>
+            <option value="advanced">Advanced</option>
+          </select>
+        </div>
+      </div>
+    `;
+    container.insertAdjacentHTML('beforeend', html);
+  }
+
+  function addCertification() {
+    const container = document.getElementById('certifications-container');
+    const html = `
+      <div class="form-group item-entry">
+        <button type="button" class="remove-btn" onclick="removeField(this)">Remove</button>
+        <div class="form-row full">
+          <input type="text" name="cert_name[]" placeholder="Certification Name">
+        </div>
+        <div class="form-row">
+          <input type="text" name="issuer[]" placeholder="Issuer">
+          <input type="date" name="issue_date[]">
+        </div>
+        <div class="form-row full">
+          <input type="url" name="credential_link[]" placeholder="Credential Link">
+        </div>
+      </div>
+    `;
+    container.insertAdjacentHTML('beforeend', html);
+  }
+</script>
 {% endblock %}
