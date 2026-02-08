@@ -64,6 +64,8 @@
           <a href="{{ url_for('views.view_resume', resume_id=resume.id) }}" class="btn view">View Resume</a>
           <a href="{{ url_for('views.create_resume', resume_id=resume.id) }}" class="btn edit">Edit</a>
           <a href="{{ url_for('views.download_resume', resume_id=resume.id) }}" class="btn download">Download PDF</a>
+          <a href="{{ url_for('views.export_resume_json_route', resume_id=resume.id) }}" class="btn" style="background-color: #10b981; color: white;">Export JSON</a>
+          <a href="{{ url_for('views.resume_stats', resume_id=resume.id) }}" class="btn" style="background-color: #f59e0b; color: white;">Statistics</a>
           <a href="{{ url_for('views.delete_resume', resume_id=resume.id) }}" class="btn delete" onclick="return confirm('Are you sure you want to delete this resume? This action cannot be undone.');">Delete</a>
         </div>
       </div>

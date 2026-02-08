@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <h2 class="mb-4">Dashboard</h2>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="card-title text-primary">{{ resumes|length }}</h3>
+                    <p class="card-text text-muted">Total Resumes</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="card-title text-success">{{ total_downloads }}</h3>
+                    <p class="card-text text-muted">Total Downloads</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="card-title text-info">{{ total_views }}</h3>
+                    <p class="card-text text-muted">Total Views</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Resume Overview</h5>
+        </div>
+        <div class="card-body">
+            {% if stats %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Title</th>
+                            <th>Created</th>
+                            <th>Downloads</th>
+                            <th>Views</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for stat in stats %}
+                        {% if stat %}
+                        <tr>
+                            <td>
+                                <strong>{{ stat.title }}</strong>
+                            </td>
+                            <td>{{ stat.created_at.strftime('%B %d, %Y') }}</td>
+                            <td>
+                                <span class="badge bg-success">{{ stat.downloads }}</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-info">{{ stat.views }}</span>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('views.resume_stats', resume_id=stat.resume_id) }}"
+                                    class="btn btn-sm btn-outline-primary">
+                                    Details
+                                </a>
+                            </td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted">No resumes created yet. <a href="{{ url_for('views.home') }}">Create your first
+                    resume</a></p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a href="{{ url_for('views.home') }}" class="btn btn-primary">Create New Resume</a>
+        <a href="{{ url_for('views.manage_resumes') }}" class="btn btn-secondary">Manage Resumes</a>
+        <a href="{{ url_for('views.search_resume') }}" class="btn btn-secondary">Search Resumes</a>
+    </div>
+</div>
+{% endblock %}

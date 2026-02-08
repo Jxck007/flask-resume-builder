@@ -1,13 +1,17 @@
 from . import db
 from flask_login import UserMixin
+from datetime import datetime
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), nullable=False)
     email = db.Column(db.String(60), nullable=False, unique=True)
     password = db.Column(db.String(140), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     resumes = db.relationship('Resume', backref='user', cascade="all, delete", lazy=True)
+    analytics = db.relationship('ResumeAnalytic', backref='user', cascade="all, delete", lazy=True)
 
 
 class Resume(db.Model):
@@ -15,6 +19,10 @@ class Resume(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     title = db.Column(db.String(50), nullable=False)
     style = db.Column(db.String(20), nullable=False, default='modern')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    is_active = db.Column(db.Boolean, default=True)
+    download_count = db.Column(db.Integer, default=0)
 
     personal_info = db.relationship('PersonalInfo', backref='resume', uselist=False, cascade="all, delete")
 
@@ -23,6 +31,7 @@ class Resume(db.Model):
     projects = db.relationship('Project', backref='resume', cascade="all, delete", lazy=True)
     skills = db.relationship('Skill', backref='resume', cascade="all, delete", lazy=True)
     certifications = db.relationship('Certification', backref='resume', cascade="all, delete", lazy=True)
+    analytics = db.relationship('ResumeAnalytic', backref='resume', cascade="all, delete", lazy=True)
 class PersonalInfo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     resume_id = db.Column(db.Integer, db.ForeignKey('resume.id'), unique=True)
@@ -75,3 +84,19 @@ class Certification(db.Model):
     issuer = db.Column(db.String(100))
     issue_date = db.Column(db.String(20))
     credential_link = db.Column(db.String(200))
+
+class ResumeAnalytic(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    resume_id = db.Column(db.Integer, db.ForeignKey('resume.id'))
+    action = db.Column(db.String(50))
+    details = db.Column(db.String(500))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class EmailNotification(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    subject = db.Column(db.String(200))
+    body = db.Column(db.Text)
+    sent_at = db.Column(db.DateTime, default=datetime.utcnow)
+    is_sent = db.Column(db.Boolean, default=False)

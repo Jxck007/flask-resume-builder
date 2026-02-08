@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <h2 class="mb-4">Search Resumes</h2>
+
+            <form method="POST" action="{{ url_for('views.search_resume') }}" class="mb-4">
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" name="search_query" placeholder="Search by resume title or name..."
+                        value="{{ query }}" required>
+                    <button class="btn btn-primary" type="submit">Search</button>
+                </div>
+            </form>
+
+            {% if query %}
+            <div class="search-results">
+                {% if results %}
+                <h4 class="mb-3">Found {{ results|length }} resume(s)</h4>
+                <div class="list-group">
+                    {% for resume in results %}
+                    <a href="{{ url_for('views.view_resume', resume_id=resume.id) }}"
+                        class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">{{ resume.title }}</h5>
+                            <small class="text-muted">{{ resume.created_at.strftime('%B %d, %Y') }}</small>
+                        </div>
+                        <p class="mb-1 text-muted">Template: {{ resume.style }}</p>
+                        <small>Downloads: {{ resume.download_count }}</small>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="alert alert-info" role="alert">
+                    No resumes found matching "{{ query }}". Try a different search term.
+                </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="alert alert-secondary" role="alert">
+                Enter a search term to find resumes.
+            </div>
+            {% endif %}
+
+            <div class="mt-4">
+                <a href="{{ url_for('views.manage_resumes') }}" class="btn btn-secondary">Back to Resumes</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <h2 class="mb-4">Resume Statistics: {{ resume.title }}</h2>
+
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Completion Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Overall Completion</span>
+                            <strong>{{ stats.completion_percentage }}%</strong>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-success" role="progressbar"
+                                style="width: {{ stats.completion_percentage }}%">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Content Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="text-center">
+                                <h3 class="text-primary">{{ stats.education_count }}</h3>
+                                <p class="text-muted">Education Entries</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="text-center">
+                                <h3 class="text-primary">{{ stats.experience_count }}</h3>
+                                <p class="text-muted">Work Experience</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="text-center">
+                                <h3 class="text-primary">{{ stats.project_count }}</h3>
+                                <p class="text-muted">Projects</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="text-center">
+                                <h3 class="text-primary">{{ stats.skill_count }}</h3>
+                                <p class="text-muted">Skills</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="text-center">
+                                <h3 class="text-primary">{{ stats.certification_count }}</h3>
+                                <p class="text-muted">Certifications</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="text-center">
+                                <h3 class="text-primary">{{ stats.personal_info | int }}</h3>
+                                <p class="text-muted">Personal Info</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">Resume Details</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Template Style:</strong> {{ resume.style }}</p>
+                    <p><strong>Created:</strong> {{ resume.created_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                    <p><strong>Last Updated:</strong> {{ resume.updated_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                    <p><strong>Downloads:</strong> {{ resume.download_count }}</p>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('views.view_resume', resume_id=resume.id) }}" class="btn btn-primary">
+                    View Resume
+                </a>
+                <a href="{{ url_for('views.manage_resumes') }}" class="btn btn-secondary">
+                    Back to Resumes
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

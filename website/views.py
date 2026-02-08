@@ -1,7 +1,9 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, send_file
+from flask import Blueprint, render_template, request, redirect, url_for, flash, send_file, jsonify
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from .models import *
+from .analytics_service import track_event
+from .utils import export_resume_json, search_resumes, get_resume_statistics
 import os
 import asyncio
 import shutil
@@ -289,6 +291,10 @@ def download_resume(resume_id):
         flash("Unauthorized", "danger")
         return redirect(url_for('views.manage_resumes'))
 
+    track_event(current_user.id, resume_id, 'download', f'Downloaded resume: {resume.title}')
+    resume.download_count += 1
+    db.session.commit()
+
     info = PersonalInfo.query.filter_by(resume_id=resume.id).first()
     if not info:
         flash("Resume information not found.", "danger")
@@ -379,6 +385,68 @@ def download_resume(resume_id):
                 print(f"Warning: Could not clean up {temp_file}: {e}")
 
 
+@views.route('/resume/export-json/<int:resume_id>')
+@login_required
+def export_resume_json_route(resume_id):
+    """Export resume as JSON file"""
+    resume = Resume.query.get_or_404(resume_id)
+    if resume.user_id != current_user.id:
+        flash("Unauthorized", "danger")
+        return redirect(url_for('views.manage_resumes'))
+
+    try:
+        json_data = export_resume_json(resume)
+        track_event(current_user.id, resume_id, 'export', f'Exported resume as JSON: {resume.title}')
+
+        return send_file(
+            path_or_file=__import__('io').BytesIO(json_data.encode()),
+            as_attachment=True,
+            download_name=f"{resume.title.replace(' ', '_')}.json",
+            mimetype='application/json'
+        )
+    except Exception as e:
+        flash(f"Error exporting resume: {str(e)}", "danger")
+        return redirect(url_for('views.manage_resumes'))
+
+@views.route('/resume/search', methods=['GET', 'POST'])
+@login_required
+def search_resume():
+    """Search resumes by title or name"""
+    results = []
+    query = request.args.get('q', '') if request.method == 'GET' else request.form.get('search_query', '')
+
+    if query:
+        results = search_resumes(current_user.id, query)
+
+    return render_template("search.html", results=results, query=query)
+
+@views.route('/resume/stats/<int:resume_id>')
+@login_required
+def resume_stats(resume_id):
+    """Get resume statistics"""
+    resume = Resume.query.get_or_404(resume_id)
+    if resume.user_id != current_user.id:
+        flash("Unauthorized", "danger")
+        return redirect(url_for('views.manage_resumes'))
+
+    stats = get_resume_statistics(resume)
+    return render_template("stats.html", resume=resume, stats=stats)
+
+@views.route('/dashboard')
+@login_required
+def dashboard():
+    """User dashboard with analytics"""
+    from .analytics_service import get_all_user_stats
+
+    resumes = Resume.query.filter_by(user_id=current_user.id).all()
+    all_stats = get_all_user_stats(current_user.id)
+
+    total_downloads = sum(stat['downloads'] for stat in all_stats if stat)
+    total_views = sum(stat['views'] for stat in all_stats if stat)
+
+    return render_template("dashboard.html", resumes=resumes, stats=all_stats,
+                         total_downloads=total_downloads, total_views=total_views)
+
 async def _generate_pdf_async(html_path, pdf_path):
     """Generate PDF from HTML using Playwright with proper cleanup"""
     browser = None
@@ -389,14 +457,14 @@ async def _generate_pdf_async(html_path, pdf_path):
             browser = await p.chromium.launch(
                 args=['--disable-blink-features=AutomationControlled']
             )
-            
+
             try:
                 context = await browser.new_context()
                 page = await context.new_page()
-                
+
                 # Load HTML file with proper error handling
                 file_url = f"file:///{html_path.replace(os.sep, '/')}"
-                
+
                 try:
                     # Navigate to page with timeout
                     await page.goto(file_url, wait_until="networkidle", timeout=30000)
@@ -404,11 +472,11 @@ async def _generate_pdf_async(html_path, pdf_path):
                     print(f"Navigation error: {nav_error}")
                     # Try without networkidle
                     await page.goto(file_url, wait_until="load", timeout=30000)
-                
+
                 # Generate PDF with proper settings
                 await page.pdf(
-                    path=pdf_path, 
-                    format="A4", 
+                    path=pdf_path,
+                    format="A4",
                     print_background=True,
                     margin={
                         'top': '0.5in',
@@ -417,17 +485,17 @@ async def _generate_pdf_async(html_path, pdf_path):
                         'right': '0.5in'
                     }
                 )
-                
+
                 await context.close()
                 print(f"PDF generated successfully: {pdf_path}")
-                
+
             except Exception as context_error:
                 print(f"Context error: {context_error}")
                 raise
             finally:
                 if browser:
                     await browser.close()
-                    
+
     except Exception as e:
         print(f"Playwright error: {e}")
         raise
